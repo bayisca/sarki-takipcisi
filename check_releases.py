@@ -17,8 +17,6 @@ def get_access_token():
         "client_id": SPOTIFY_CLIENT_ID,
         "client_secret": SPOTIFY_CLIENT_SECRET,
     })
-    print("STATUS:", resp.status_code)
-    print("BODY:", resp.json())
     return resp.json()["access_token"]
 
 def get_followed_artists(token):
