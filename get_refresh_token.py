@@ -1,13 +1,19 @@
+import os
 import requests
 import urllib.parse
 import webbrowser
 import http.server
 import socketserver
 
-CLIENT_ID = "6f84402ff4b843739327b90bcb98eb2e"
-CLIENT_SECRET = "9c6dd6e4a9264b8ca4c876d8074ec823"
-REDIRECT_URI = "http://127.0.0.1:8888/callback"
+CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
+CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8888/callback")
 SCOPE = "user-follow-read"
+
+if not CLIENT_ID or not CLIENT_SECRET:
+    raise SystemExit(
+        "Spotify kimlik bilgileri eksik. Lütfen SPOTIFY_CLIENT_ID ve SPOTIFY_CLIENT_SECRET ortam değişkenlerini tanımlayın."
+    )
 
 # 1. Kullanıcıyı yetkilendirme sayfasına yönlendir
 auth_url = "https://accounts.spotify.com/authorize?" + urllib.parse.urlencode({
@@ -34,6 +40,9 @@ with socketserver.TCPServer(("127.0.0.1", 8888), Handler) as httpd:
     httpd.handle_request()  # tek bir istek al, kapan
 
 code = auth_code["code"]
+
+if not code:
+    raise SystemExit("Spotify yetkilendirme kodu alınamadı. İşlemi tekrar deneyin.")
 
 # 3. Code'u refresh_token ile degistir
 resp = requests.post("https://accounts.spotify.com/api/token", data={

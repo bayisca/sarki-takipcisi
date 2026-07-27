@@ -2,11 +2,24 @@ import requests
 import json
 import os
 
-SPOTIFY_CLIENT_ID = os.environ["SPOTIFY_CLIENT_ID"]
-SPOTIFY_CLIENT_SECRET = os.environ["SPOTIFY_CLIENT_SECRET"]
-SPOTIFY_REFRESH_TOKEN = os.environ["SPOTIFY_REFRESH_TOKEN"]
-TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
+SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+SPOTIFY_REFRESH_TOKEN = os.environ.get("SPOTIFY_REFRESH_TOKEN")
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
+missing = [
+    name for name, value in {
+        "SPOTIFY_CLIENT_ID": SPOTIFY_CLIENT_ID,
+        "SPOTIFY_CLIENT_SECRET": SPOTIFY_CLIENT_SECRET,
+        "SPOTIFY_REFRESH_TOKEN": SPOTIFY_REFRESH_TOKEN,
+        "TELEGRAM_TOKEN": TELEGRAM_TOKEN,
+        "TELEGRAM_CHAT_ID": TELEGRAM_CHAT_ID,
+    }.items() if not value
+]
+
+if missing:
+    raise SystemExit(f"Eksik ortam değişkenleri: {', '.join(missing)}")
 
 STATE_FILE = "state.json"
 
