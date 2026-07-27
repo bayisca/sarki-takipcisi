@@ -5,15 +5,44 @@ import webbrowser
 import http.server
 import socketserver
 
-CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
-CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+
+def load_dotenv(path):
+    if not os.path.exists(path):
+        return
+
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            os.environ.setdefault(key, value)
+
+
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
+
+
+def require_setting(name, prompt_text):
+    value = os.environ.get(name)
+    if value:
+        return value
+
+    value = input(f"{prompt_text}: ").strip()
+    if not value:
+        raise SystemExit(f"{name} tanımlanmadı. İşlemi tekrar başlatın.")
+
+    os.environ[name] = value
+    return value
+
+
+CLIENT_ID = require_setting("SPOTIFY_CLIENT_ID", "Spotify Client ID girin")
+CLIENT_SECRET = require_setting("SPOTIFY_CLIENT_SECRET", "Spotify Client Secret girin")
 REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI", "http://127.0.0.1:8888/callback")
 SCOPE = "user-follow-read"
-
-if not CLIENT_ID or not CLIENT_SECRET:
-    raise SystemExit(
-        "Spotify kimlik bilgileri eksik. Lütfen SPOTIFY_CLIENT_ID ve SPOTIFY_CLIENT_SECRET ortam değişkenlerini tanımlayın."
-    )
 
 # 1. Kullanıcıyı yetkilendirme sayfasına yönlendir
 auth_url = "https://accounts.spotify.com/authorize?" + urllib.parse.urlencode({
